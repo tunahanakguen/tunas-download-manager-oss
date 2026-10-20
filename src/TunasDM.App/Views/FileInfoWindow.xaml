@@ -1,0 +1,64 @@
+<ui:FluentWindow x:Class="TunasDM.App.Views.FileInfoWindow" Style="{StaticResource DialogWindow}"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:TunasDM.App.Localization"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="{l:T 'Download-Info'}" Icon="/Resources/TunasDownloadManager.ico" Width="620" SizeToContent="Height"
+        ResizeMode="NoResize" WindowStartupLocation="CenterOwner">
+    <DockPanel>
+        <ui:TitleBar DockPanel.Dock="Top" Title="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}" ShowMaximize="False" ShowMinimize="False" CanMaximize="False">
+            <ui:TitleBar.Icon><ui:ImageIcon Source="/Resources/TunasLogo.png" /></ui:TitleBar.Icon>
+        </ui:TitleBar>
+    <StackPanel Margin="20">
+        <DockPanel Margin="0,0,0,16">
+            <Border DockPanel.Dock="Left" Width="44" Height="44" CornerRadius="8" Background="{StaticResource PanelAlt}" Margin="0,0,14,0">
+                <ui:SymbolIcon x:Name="IconSymbol" Symbol="Document24" FontSize="22" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </Border>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock x:Name="UrlText" Foreground="{StaticResource TextSecondary}" FontSize="12" TextTrimming="CharacterEllipsis" />
+                <TextBlock x:Name="SizeText" Text="{l:T 'Größe wird abgefragt …'}" FontSize="15" FontWeight="SemiBold" Margin="0,3,0,0" />
+            </StackPanel>
+        </DockPanel>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="110" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="8" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="8" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="8" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Grid.Row="0" Text="{l:T 'Kategorie'}" Style="{StaticResource Label}" />
+            <ComboBox Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2" x:Name="CategoryBox" DisplayMemberPath="Name" SelectionChanged="OnCategoryChanged" />
+
+            <TextBlock Grid.Row="2" Text="{l:T 'Speichern in'}" Style="{StaticResource Label}" />
+            <TextBox Grid.Row="2" Grid.Column="1" x:Name="FolderBox" />
+            <Button Grid.Row="2" Grid.Column="2" Content="…" Width="36" Padding="0" Margin="8,0,0,0" Click="OnBrowse" ToolTip="{l:T 'Ordner wählen'}" />
+
+            <TextBlock Grid.Row="4" Text="{l:T 'Dateiname'}" Style="{StaticResource Label}" />
+            <TextBox Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" x:Name="NameBox" TextChanged="OnNameChanged" />
+
+            <TextBlock Grid.Row="6" Text="{l:T 'Beschreibung'}" Style="{StaticResource Label}" />
+            <TextBox Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="2" x:Name="DescriptionBox" />
+        </Grid>
+
+        <TextBlock x:Name="ErrorText" Foreground="{StaticResource Danger}" FontSize="12" Margin="0,12,0,0" TextWrapping="Wrap" Visibility="Collapsed" />
+
+        <DockPanel Margin="0,20,0,0">
+            <Button DockPanel.Dock="Left" Content="{l:T 'Abbrechen'}" IsCancel="True" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="{l:T 'Später laden'}" Margin="0,0,8,0" Click="OnLater" ToolTip="{l:T 'In die Warteschlange stellen'}" />
+                <ui:Button Appearance="Primary" Content="{l:T 'Jetzt laden'}" IsDefault="True" Click="OnStart" />
+            </StackPanel>
+        </DockPanel>
+    </StackPanel>
+    </DockPanel>
+</ui:FluentWindow>

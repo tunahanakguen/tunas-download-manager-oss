@@ -1,0 +1,9 @@
+bin/
+obj/
+.vs/
+*.user
+TestResults/
+*.tunasdm
+*.tunasdm.json
+*.tunasdm.json.tmp
+artifacts/

@@ -1,0 +1,15 @@
+{
+  "extDescription": { "message": "Übergibt Downloads aus dem Browser an den TUNAS Download Manager." },
+  "menuLink": { "message": "Mit TUNAS laden" },
+  "menuAll": { "message": "Alle Links mit TUNAS laden" },
+  "menuGrab": { "message": "Website mit TUNAS durchsuchen (Site-Grabber)" },
+  "badgeOff": { "message": "AUS" },
+  "titleOffClick": { "message": "Übernahme ausgeschaltet (klicken zum Einschalten)" },
+  "titleNotConnected": { "message": "nicht verbunden" },
+  "titleOffInApp": { "message": "in der App ausgeschaltet" },
+  "titleActive": { "message": "Übernahme aktiv (klicken zum Ausschalten)" },
+  "disconnected": { "message": "Verbindung getrennt" },
+  "videoButton": { "message": "Video laden" },
+  "videoButtonTitle": { "message": "Dieses Video mit dem TUNAS Download Manager laden" },
+  "hide": { "message": "Ausblenden" }
+}

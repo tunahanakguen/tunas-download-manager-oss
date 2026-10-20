@@ -1,0 +1,33 @@
+<ui:FluentWindow x:Class="TunasDM.App.Views.DuplicateWindow" Style="{StaticResource DialogWindow}"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:TunasDM.App.Localization"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="{l:T 'Download schon in der Liste'}" Icon="/Resources/TunasDownloadManager.ico" Width="560" SizeToContent="Height"
+        ResizeMode="NoResize" WindowStartupLocation="CenterScreen" ShowInTaskbar="True" Topmost="True">
+    <DockPanel>
+        <ui:TitleBar DockPanel.Dock="Top" Title="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}" ShowMaximize="False" ShowMinimize="False" CanMaximize="False">
+            <ui:TitleBar.Icon><ui:ImageIcon Source="/Resources/TunasLogo.png" /></ui:TitleBar.Icon>
+        </ui:TitleBar>
+    <StackPanel Margin="20">
+        <TextBlock Text="{l:T 'Diese Adresse steht schon in der Download-Liste:'}" Margin="0,0,0,8" />
+        <Border Style="{StaticResource CardBorder}" Padding="14,10">
+            <StackPanel>
+                <TextBlock x:Name="NameText" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                <TextBlock x:Name="StateText" Foreground="{StaticResource TextMuted}" FontSize="12" Margin="0,3,0,0" />
+                <TextBlock x:Name="UrlText" Foreground="{StaticResource TextMuted}" FontSize="12" Margin="0,3,0,0" TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+        </Border>
+
+        <TextBlock Text="{l:T 'Was soll passieren?'}" Style="{StaticResource Label}" Margin="0,16,0,6" />
+        <RadioButton x:Name="ResumeOption" GroupName="Choice" Margin="0,0,0,6" />
+        <RadioButton x:Name="NewOption" GroupName="Choice" Content="{l:T 'Noch einmal laden, unter neuem Namen (z. B. „datei (2).zip“)'}" Margin="0,0,0,6" />
+        <RadioButton x:Name="ReplaceOption" GroupName="Choice" Content="{l:T 'Vorhandenen Eintrag ersetzen und seine Datei löschen'}" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <Button Content="{l:T 'Abbrechen'}" IsCancel="True" Margin="0,0,8,0" />
+            <ui:Button Appearance="Primary" Content="{l:T 'Weiter'}" IsDefault="True" Click="OnOk" />
+        </StackPanel>
+    </StackPanel>
+    </DockPanel>
+</ui:FluentWindow>

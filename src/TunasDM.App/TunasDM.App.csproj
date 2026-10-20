@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <!-- Nur für das Symbol im Infobereich (NotifyIcon). -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <PlatformTarget>x64</PlatformTarget>
+    <RootNamespace>TunasDM.App</RootNamespace>
+    <AssemblyName>TunasDM</AssemblyName>
+    <Product>TUNAS Download Manager</Product>
+    <Title>TUNAS Download Manager</Title>
+    <Authors>Tunahan A.</Authors>
+    <Copyright>Copyright © 2026 Tunahan A. – GPL-3.0</Copyright>
+    <Version>0.8.0</Version>
+    <ApplicationIcon>Resources\TunasDownloadManager.ico</ApplicationIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- WinForms-Namen nicht global einbinden, sonst kollidieren Application, MessageBox usw. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+    <Using Include="System.IO" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\TunasDownloadManager.ico" />
+    <Resource Include="Resources\TunasLogo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="WPF-UI" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TunasDM.Core\TunasDM.Core.csproj" />
+    <!-- Host nur bauen lassen; seine Dateien werden unten neben TunasDM.exe kopiert. -->
+    <ProjectReference Include="..\TunasDM.Host\TunasDM.Host.csproj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Chrome/Edge: browser\extension. Firefox: browser\firefox mit eigenem Manifest (manifest.firefox.json → manifest.json). -->
+    <None Include="..\..\extension\**\*" Exclude="..\..\extension\manifest.firefox.json" Link="browser\extension\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\extension\**\*" Exclude="..\..\extension\manifest.json;..\..\extension\manifest.firefox.json" Link="browser\firefox\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\extension\manifest.firefox.json" Link="browser\firefox\manifest.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="CopyNativeHost" AfterTargets="Build">
+    <ItemGroup>
+      <NativeHostFiles Include="..\TunasDM.Host\bin\$(Configuration)\net10.0-windows\TunasDM.Host.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(NativeHostFiles)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

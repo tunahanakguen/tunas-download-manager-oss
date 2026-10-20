@@ -1,0 +1,121 @@
+# Baut und testet bei jedem Push; bei einem Tag v* entsteht das Setup als Entwurf eines GitHub-Releases.
+# Signieren über SignPath Foundation, sobald das Projekt dort aufgenommen ist:
+#   Repository-Variablen SIGNPATH_ORGANIZATION_ID und SIGNPATH_PROJECT_SLUG, Secret SIGNPATH_API_TOKEN.
+#   Ohne sie läuft alles gleich, nur unsigniert. Siehe CODE_SIGNING_POLICY.md.
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+      actions: read     # SignPath liest die hochgeladenen Artefakte
+    env:
+      SIGN: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' && startsWith(github.ref, 'refs/tags/v') }}
+      HAS_RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Tests
+        run: dotnet test tests/TunasDM.Core.Tests -c Release
+
+      - name: Inno Setup installieren
+        run: choco install innosetup -y --no-progress
+
+      - name: Programmdateien veröffentlichen
+        shell: pwsh
+        run: ./installer/build.ps1 -Stage Publish
+
+      # ---------- Signieren der Programmdateien (nur Tags, nur mit SignPath) ----------
+      - name: Programmdateien hochladen (unsigniert)
+        if: env.SIGN == 'true'
+        id: upload-program
+        uses: actions/upload-artifact@v7
+        with:
+          name: program-unsigned
+          path: |
+            artifacts/publish/TunasDM.exe
+            artifacts/publish/TunasDM.dll
+            artifacts/publish/TunasDM.Core.dll
+            artifacts/publish/TunasDM.Host.exe
+
+      - name: Programmdateien signieren (SignPath)
+        if: env.SIGN == 'true'
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          connector-url: https://githubactions.signpath.io
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: program-files
+          github-artifact-id: ${{ steps.upload-program.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: artifacts/publish   # signierte Dateien ersetzen die unsignierten
+
+      - name: Setup bauen
+        shell: pwsh
+        run: ./installer/build.ps1 -Stage Package
+
+      # ---------- Signieren des Setups ----------
+      - name: Setup hochladen (unsigniert)
+        if: env.SIGN == 'true'
+        id: upload-setup
+        uses: actions/upload-artifact@v7
+        with:
+          name: setup-unsigned
+          path: artifacts/TUNAS-Download-Manager-Setup-*.exe
+
+      - name: Setup signieren (SignPath)
+        if: env.SIGN == 'true'
+        uses: signpath/github-action-submit-signing-request@v2
+        with:
+          connector-url: https://githubactions.signpath.io
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: release-signing
+          artifact-configuration-slug: setup
+          github-artifact-id: ${{ steps.upload-setup.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: artifacts
+
+      - name: Prüfsumme
+        shell: pwsh
+        run: ./installer/build.ps1 -Stage Checksum
+
+      - name: Setup als Artefakt
+        uses: actions/upload-artifact@v7
+        with:
+          name: setup
+          path: |
+            artifacts/TUNAS-Download-Manager-Setup-*.exe
+            artifacts/TUNAS-Download-Manager-Setup-*.exe.sha256
+
+      # Entwurf im Release-Repository, das die installierten Fassungen nach Updates fragen
+      # (UpdateChecker.DefaultRepository). Hinweise ergänzen und von Hand veröffentlichen.
+      # Braucht das Secret RELEASES_TOKEN (fein granulares Token, nur „Contents: write“ auf dem Release-Repository).
+      - name: Release-Entwurf
+        if: startsWith(github.ref, 'refs/tags/v') && env.HAS_RELEASES_TOKEN == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.RELEASES_TOKEN }}
+        run: |
+          $tag = "${{ github.ref_name }}"
+          gh release create $tag --repo tunahanakguen/tunas-download-manager-releases --draft `
+            --title "TUNAS Download Manager $($tag.TrimStart('v'))" --notes "Siehe Änderungen im Repository." `
+            (Get-ChildItem artifacts/TUNAS-Download-Manager-Setup-*.exe*).FullName

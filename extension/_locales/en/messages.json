@@ -1,0 +1,15 @@
+{
+  "extDescription": { "message": "Hands downloads from the browser over to TUNAS Download Manager." },
+  "menuLink": { "message": "Download with TUNAS" },
+  "menuAll": { "message": "Download all links with TUNAS" },
+  "menuGrab": { "message": "Search website with TUNAS (site grabber)" },
+  "badgeOff": { "message": "OFF" },
+  "titleOffClick": { "message": "takeover switched off (click to switch on)" },
+  "titleNotConnected": { "message": "not connected" },
+  "titleOffInApp": { "message": "switched off in the app" },
+  "titleActive": { "message": "takeover active (click to switch off)" },
+  "disconnected": { "message": "Connection closed" },
+  "videoButton": { "message": "Download video" },
+  "videoButtonTitle": { "message": "Download this video with TUNAS Download Manager" },
+  "hide": { "message": "Hide" }
+}

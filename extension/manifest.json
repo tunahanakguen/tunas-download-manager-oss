@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "TUNAS Download Manager",
+  "version": "0.6.0",
+  "description": "__MSG_extDescription__",
+  "default_locale": "en",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqeBjQ0/SbH6bggExXAVRx9JidumK5rWn4OaLvtmjeuxhdTbW8T2o8mEjKhHVf5/DgVdQgcVCithWdsjm03J5p02fzn50/4icDnNwJzY4vouSTx9RqmCwj8Mf7v3HWey0nklprCydPgp6AJm7So1oQRGdgg3PqSTWl3niFPNYsBBY2tiRITLV2Wsl6Q0GZUAu8HX/7oy2hGsAuMACYScoDS+6x/20swbn4Bm/oyD3kgICsuJZzlP9hdMR2zGm4iMG93iF/r+WBh8GRf2Ixjlsjr86b9hQA6f3vWXi+Y9kBm2MQLj6rfEthtwp8ecZDuiL0HY1unsChKbjRaBH0LgRkQIDAQAB",
+  "icons": { "16": "icons/icon16.png", "32": "icons/icon32.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "action": { "default_title": "TUNAS Download Manager", "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png" } },
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [{ "matches": ["http://*/*", "https://*/*"], "js": ["content.js"], "all_frames": true, "run_at": "document_idle" }],
+  "permissions": ["downloads", "contextMenus", "nativeMessaging", "cookies", "storage", "scripting", "activeTab", "webRequest", "webNavigation"],
+  "host_permissions": ["<all_urls>"],
+  "minimum_chrome_version": "110"
+}

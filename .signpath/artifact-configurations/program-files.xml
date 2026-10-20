@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- SignPath: eigene Programmdateien im Publish-Ordner signieren (vor dem Bau des Setups).
+     In SignPath als Artifact Configuration "program-files" anlegen. Fremde Dateien (.NET, WPF-UI, SQLite)
+     bleiben, wie sie von ihren Herstellern kommen. -->
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <zip-file>
+    <pe-file path="TunasDM.exe" product-name="TUNAS Download Manager">
+      <authenticode-sign />
+    </pe-file>
+    <pe-file path="TunasDM.dll" product-name="TUNAS Download Manager">
+      <authenticode-sign />
+    </pe-file>
+    <pe-file path="TunasDM.Core.dll" product-name="TunasDM.Core">
+      <authenticode-sign />
+    </pe-file>
+    <pe-file path="TunasDM.Host.exe" product-name="TunasDM.Host">
+      <authenticode-sign />
+    </pe-file>
+  </zip-file>
+</artifact-configuration>

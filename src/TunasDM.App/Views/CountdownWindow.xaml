@@ -1,0 +1,22 @@
+<ui:FluentWindow x:Class="TunasDM.App.Views.CountdownWindow" Style="{StaticResource DialogWindow}"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="clr-namespace:TunasDM.App.Localization"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="{l:T 'Warteschlange fertig'}" Icon="/Resources/TunasDownloadManager.ico" Width="460" SizeToContent="Height"
+        ResizeMode="NoResize" WindowStartupLocation="CenterScreen" Topmost="True" ShowInTaskbar="True">
+    <DockPanel>
+        <ui:TitleBar DockPanel.Dock="Top" Title="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}" ShowMaximize="False" ShowMinimize="False" CanMaximize="False">
+            <ui:TitleBar.Icon><ui:ImageIcon Source="/Resources/TunasLogo.png" /></ui:TitleBar.Icon>
+        </ui:TitleBar>
+    <StackPanel Margin="20">
+        <TextBlock x:Name="MessageText" FontSize="15" TextWrapping="Wrap" />
+        <TextBlock x:Name="CountText" FontSize="40" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,14,0,4" />
+        <ProgressBar x:Name="Bar" Height="4" Maximum="60" />
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+            <ui:Button Appearance="Primary" Content="{l:T 'Abbrechen'}" IsCancel="True" IsDefault="True" Margin="0,0,8,0" Click="OnCancel" />
+            <Button x:Name="NowButton" Click="OnNow" />
+        </StackPanel>
+    </StackPanel>
+    </DockPanel>
+</ui:FluentWindow>
