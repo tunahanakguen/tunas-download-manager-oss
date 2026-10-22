@@ -89,6 +89,12 @@ public static class NativeHostRegistration
         try
         {
             Directory.CreateDirectory(targetFolder);
+            // Der Verweis zuerst und unabhängig vom Kopieren: Ist die Host-Kopie gerade gesperrt, findet sie die App trotzdem.
+            string appPath = Path.Combine(appFolder, "TunasDM.exe");
+            string appFile = Path.Combine(targetFolder, AppPathFile);
+            if (!File.Exists(appFile) || File.ReadAllText(appFile).Trim() != appPath)
+                File.WriteAllText(appFile, appPath);
+
             // Die DLL zuerst: ist sie gesperrt, läuft der Host, und es wird gar nichts gemischt.
             foreach (string name in files)
             {
@@ -102,10 +108,6 @@ public static class NativeHostRegistration
             }
             foreach (string name in HostFiles.Except(files))
                 File.Delete(Path.Combine(targetFolder, name));
-            string appPath = Path.Combine(appFolder, "TunasDM.exe");
-            string appFile = Path.Combine(targetFolder, AppPathFile);
-            if (!File.Exists(appFile) || File.ReadAllText(appFile).Trim() != appPath)
-                File.WriteAllText(appFile, appPath);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -134,7 +136,7 @@ public static class NativeHostRegistration
         return x.Length == y.Length && File.ReadAllBytes(a).AsSpan().SequenceEqual(File.ReadAllBytes(b));
     }
 
-    /// <summary>Für welche Browser der Host eingetragen ist.</summary>
+    /// <summary>Für welche Browser der Host eingetragen ist (Manifest und die darin genannte Exe vorhanden).</summary>
     [SupportedOSPlatform("windows")]
     public static IReadOnlyList<string> RegisteredBrowsers()
     {
@@ -142,9 +144,22 @@ public static class NativeHostRegistration
         foreach (var (browser, keyPath) in Browsers)
         {
             using var key = Registry.CurrentUser.OpenSubKey($@"{keyPath}\{BrowserProtocol.HostName}");
-            if (key?.GetValue(null) is string path && File.Exists(path))
+            if (key?.GetValue(null) is string path && ManifestHostExists(path))
                 result.Add(browser);
         }
         return result;
+    }
+
+    public static bool ManifestHostExists(string manifestPath)
+    {
+        try
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            return doc.RootElement.GetProperty("path").GetString() is { Length: > 0 } host && File.Exists(host);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or KeyNotFoundException or InvalidOperationException)
+        {
+            return false;
+        }
     }
 }

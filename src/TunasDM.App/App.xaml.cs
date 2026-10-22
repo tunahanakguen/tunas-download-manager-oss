@@ -234,22 +234,27 @@ public partial class App : Application, IAppActions
 
     private static string HostPath => Path.Combine(AppContext.BaseDirectory, "TunasDM.Host.exe");
 
-    /// <summary>Host bei Chrome und Edge anmelden (bei jedem Start, falls das Programm verschoben wurde).</summary>
-    private static void RegisterNativeHost()
+    /// <summary>
+    /// Host bei Chrome, Edge und Firefox anmelden (bei jedem Start, falls das Programm verschoben wurde,
+    /// und über „Reparieren“ in den Optionen). Liefert eine Fehlermeldung oder null.
+    /// </summary>
+    private static string? RegisterNativeHost()
     {
         if (!File.Exists(HostPath))
         {
             Logger.Write("TunasDM.Host.exe fehlt, Browser-Integration nicht angemeldet.");
-            return;
+            return L.T("TunasDM.Host.exe fehlt im Programmordner. Bitte den TUNAS Download Manager neu installieren.");
         }
         try
         {
             string host = NativeHostRegistration.InstallHost(AppContext.BaseDirectory, Path.Combine(Logger.Folder, "host"));
             NativeHostRegistration.Register(host, Logger.Folder);
+            return null;
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException or System.Security.SecurityException or IOException)
         {
             Logger.Write("Anmeldung bei den Browsern fehlgeschlagen: " + ex.Message);
+            return ex.Message;
         }
     }
 
@@ -541,8 +546,9 @@ public partial class App : Application, IAppActions
 
     public void ShowOptions()
     {
-        var browsers = NativeHostRegistration.RegisteredBrowsers();
-        var dialog = new OptionsWindow(Manager.Settings, browsers, _browser?.ConnectedBrowsers ?? 0, ExtensionFolder) { Owner = _window };
+        var dialog = new OptionsWindow(Manager.Settings,
+            () => new OptionsWindow.BrowserState(NativeHostRegistration.RegisteredBrowsers(), _browser?.ConnectedBrowsers ?? []),
+            RegisterNativeHost, ExtensionFolder) { Owner = _window };
         if (dialog.ShowDialog() != true || dialog.Result is not { } settings)
             return;
 

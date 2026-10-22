@@ -14,10 +14,19 @@ public partial class OptionsWindow : Wpf.Ui.Controls.FluentWindow
     private readonly ObservableCollection<CategoryRow> _categories;
     private readonly AppSettings _current;
 
-    public OptionsWindow(AppSettings current, IReadOnlyList<string> registeredBrowsers, int connectedBrowsers, string extensionFolder)
+    private readonly Func<BrowserState> _browserState;
+    private readonly Func<string?> _repairBrowser;
+
+    /// <summary>Wo der Host angemeldet ist und welche Erweiterungen gerade verbunden sind.</summary>
+    public sealed record BrowserState(IReadOnlyList<string> Registered, IReadOnlyList<string> Connected);
+
+    /// <param name="repairBrowser">Meldet den Host neu an; liefert eine Fehlermeldung oder null.</param>
+    public OptionsWindow(AppSettings current, Func<BrowserState> browserState, Func<string?> repairBrowser, string extensionFolder)
     {
         InitializeComponent();
         _current = current;
+        _browserState = browserState;
+        _repairBrowser = repairBrowser;
 
         // Auf einer Kopie arbeiten; erst „Speichern“ übernimmt.
         var settings = JsonSerializer.Deserialize<AppSettings>(JsonSerializer.Serialize(current))!;
@@ -60,14 +69,7 @@ public partial class OptionsWindow : Wpf.Ui.Controls.FluentWindow
         ExcludedSites.Text = string.Join(" ", settings.BrowserExcludedSites);
         ExtensionFolder.Text = extensionFolder;
         FirefoxFolder.Text = Path.Combine(Path.GetDirectoryName(extensionFolder)!, "firefox");
-        BrowserStatus.Text =
-            (registeredBrowsers.Count > 0 ? L.F("Angemeldet bei: {0}.", string.Join(", ", registeredBrowsers)) : L.T("Noch bei keinem Browser angemeldet."))
-            + (connectedBrowsers switch
-            {
-                0 => " " + L.T("Zurzeit ist keine Erweiterung verbunden."),
-                1 => " " + L.T("1 Browser ist verbunden."),
-                _ => " " + L.F("{0} Browser sind verbunden.", connectedBrowsers),
-            });
+        ShowBrowserState();
 
         DownloadsFolder.Text = settings.DownloadsFolder;
         _categories = new ObservableCollection<CategoryRow>(settings.Categories.Select(CategoryRow.From));
@@ -221,6 +223,32 @@ public partial class OptionsWindow : Wpf.Ui.Controls.FluentWindow
         {
             return L.T("nicht ausführbar:") + " " + ex.Message;
         }
+    }
+
+    private void ShowBrowserState()
+    {
+        var state = _browserState();
+        BrowserStatus.Text =
+            (state.Registered.Count > 0 ? L.F("Angemeldet bei: {0}.", string.Join(", ", state.Registered)) : L.T("Noch bei keinem Browser angemeldet."))
+            + " "
+            + (state.Connected.Count > 0
+                ? L.F("Verbunden: {0}.", string.Join(", ", state.Connected))
+                : L.T("Zurzeit ist keine Erweiterung verbunden."));
+    }
+
+    // Neu anmelden; die Erweiterung versucht es danach jede Minute selbst, ein Klick auf ihr rotes „!“ sofort.
+    private async void OnRepairBrowser(object sender, RoutedEventArgs e)
+    {
+        RepairButton.IsEnabled = false;
+        string? error = _repairBrowser();
+        ShowBrowserState();
+        RepairResult.Text = error is null
+            ? L.T("Neu angemeldet. Zeigt das TUNAS-Symbol im Browser weiter ein rotes „!“, darauf klicken. Hilft das nicht, den Browser ganz schließen und neu starten.")
+            : L.T("Anmelden fehlgeschlagen:") + " " + error;
+        RepairResult.Visibility = Visibility.Visible;
+        await Task.Delay(TimeSpan.FromSeconds(3));
+        ShowBrowserState();
+        RepairButton.IsEnabled = true;
     }
 
     private void OnOpenExtensionFolder(object sender, RoutedEventArgs e) => Services.Shell.Open(ExtensionFolder.Text);

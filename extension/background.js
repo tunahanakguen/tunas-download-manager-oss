@@ -21,14 +21,18 @@ function connect() {
     lastError = String(e);
     port = null;
     updateBadge();
+    scheduleRetry();
     return null;
   }
+  const current = port;
   port.onMessage.addListener(onAppMessage);
   port.onDisconnect.addListener(() => {
+    if (port !== current) return; // alte Verbindung nach „Neu verbinden“
     lastError = chrome.runtime.lastError?.message ?? t("disconnected");
     port = null;
     config = null;
     updateBadge();
+    scheduleRetry();
   });
   port.postMessage({ type: "hello", v: PROTOCOL, browser: browserName(), extVersion: chrome.runtime.getManifest().version });
   return port;
@@ -46,10 +50,33 @@ function waitForConfig(ms) {
   });
 }
 
+// Verbindung verwerfen und neu aufbauen; liefert die Einstellungen der App oder null.
+async function reconnect() {
+  const old = port;
+  port = null;
+  config = null;
+  try { old?.disconnect(); } catch { }
+  return waitForConfig(4000);
+}
+
+// Ohne Verbindung jede Minute neu versuchen (App beendet, Browser vor der App gestartet …).
+const RETRY_ALARM = "tunas-reconnect";
+
+function scheduleRetry() {
+  if (enabled) chrome.alarms.create(RETRY_ALARM, { periodInMinutes: 1 });
+}
+
+chrome.alarms.onAlarm.addListener((alarm) => {
+  if (alarm.name !== RETRY_ALARM) return;
+  if (!enabled || config) chrome.alarms.clear(RETRY_ALARM);
+  else if (!port) connect();
+});
+
 function onAppMessage(message) {
   if (message.type === "config") {
     config = message;
     lastError = null;
+    chrome.alarms.clear(RETRY_ALARM);
     configWaiters.forEach((resolve) => resolve(config));
     configWaiters = [];
   } else if (message.type === "error") {
@@ -269,6 +296,20 @@ chrome.runtime.onMessage.addListener((message, sender, reply) => {
     });
     return true; // Antwort kommt asynchron
   }
+  // Hilfeseite: Zustand abfragen und neu verbinden.
+  if (message?.type === "tunas-status") {
+    reply({ enabled, connected: Boolean(config), error: lastError, browser: browserName(), version: chrome.runtime.getManifest().version });
+    return;
+  }
+  if (message?.type === "tunas-reconnect") {
+    enabled = true;
+    chrome.storage.local.set({ enabled });
+    reconnect().then((c) => {
+      updateBadge();
+      reply({ connected: Boolean(c), error: lastError });
+    });
+    return true;
+  }
   if (message?.type === "tunas-diag") {
     diag(sender, message.text);
     return;
@@ -301,7 +342,7 @@ function updateBadge() {
     title += ` – ${t("titleOffClick")}`;
   } else if (!config) {
     text = "!";
-    title += ` – ${t("titleNotConnected")}${lastError ? `: ${lastError}` : ""}`;
+    title += ` – ${t("titleNotConnected")}${lastError ? `: ${lastError}` : ""} (${t("titleRetryClick")})`;
   } else if (!config.enabled) {
     text = t("badgeOff");
     title += ` – ${t("titleOffInApp")}`;
@@ -313,7 +354,16 @@ function updateBadge() {
   chrome.action.setTitle({ title });
 }
 
+// Rotes „!“: erst neu verbinden; klappt es nicht, erklärt die Hilfeseite die nächsten Schritte.
+// Sonst schaltet der Klick die Übernahme ein und aus.
 chrome.action.onClicked.addListener(async () => {
+  if (enabled && !config) {
+    chrome.action.setBadgeText({ text: "…" });
+    const c = await reconnect();
+    updateBadge();
+    if (!c) chrome.tabs.create({ url: chrome.runtime.getURL("help.html") });
+    return;
+  }
   enabled = !enabled;
   await chrome.storage.local.set({ enabled });
   if (enabled) connect();

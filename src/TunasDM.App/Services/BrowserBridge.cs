@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Text;
+using TunasDM.Core;
 using TunasDM.Core.Browser;
 using TunasDM.Core.Management;
 
@@ -23,13 +24,29 @@ public sealed class BrowserBridge : IDisposable
     /// <summary>Nachricht einer Erweiterung; kommt aus einem Hintergrund-Thread.</summary>
     public event EventHandler<BrowserMessage>? MessageReceived;
 
-    public int ConnectedBrowsers
+    /// <summary>Verbundene Erweiterungen, z. B. „Chrome 0.7.0“; vor dem ersten „hello“ nur „Browser“.</summary>
+    public IReadOnlyList<string> ConnectedBrowsers
     {
         get
         {
             lock (_lock)
-                return _clients.Count;
+                return _clients.Select(c => _names.GetValueOrDefault(c) ?? L.T("Browser")).ToList();
         }
+    }
+
+    private readonly Dictionary<StreamWriter, string> _names = new();
+
+    private static string DisplayName(BrowserMessage hello)
+    {
+        string browser = hello.Browser switch
+        {
+            "chrome" => "Chrome",
+            "edge" => "Edge",
+            "firefox" => "Firefox",
+            { Length: > 0 } other => other,
+            _ => L.T("Browser"),
+        };
+        return hello.ExtVersion is { Length: > 0 } version ? $"{browser} {version}" : browser;
     }
 
     public void Start() => _ = Task.Run(AcceptLoopAsync);
@@ -91,7 +108,11 @@ public sealed class BrowserBridge : IDisposable
                 if (message.Type == "diag")
                     continue;
                 if (message.Type == "hello")
+                {
+                    lock (_lock)
+                        _names[writer] = DisplayName(message);
                     await SendAsync(writer, BrowserProtocol.Serialize(BrowserProtocol.CreateConfig(_settings())));
+                }
                 else
                     MessageReceived?.Invoke(this, message);
             }
@@ -104,7 +125,10 @@ public sealed class BrowserBridge : IDisposable
         {
             Logger.Write("Browser getrennt.");
             lock (_lock)
+            {
                 _clients.Remove(writer);
+                _names.Remove(writer);
+            }
             await pipe.DisposeAsync();
         }
     }

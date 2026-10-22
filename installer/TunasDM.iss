@@ -43,6 +43,8 @@ Compression=lzma2/ultra64
 SolidCompression=yes
 ShowLanguageDialog=auto
 CloseApplications=no
+; Solange das Setup läuft, startet der Browser-Host die App nicht (sie würde Dateien sperren).
+SetupMutex=TunasDMSetup
 RestartApplications=no
 
 [Languages]
@@ -138,6 +140,9 @@ end;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 begin
+  { Ohne diesen Verweis findet auch ein älterer Browser-Host die App nicht und startet sie nicht mitten im
+    Update neu (gesperrte Dateien). Die App schreibt ihn beim ersten Start wieder. }
+  DeleteFile(ExpandConstant('{#DataDir}\host\TunasDM.app.txt'));
   StopApp(ExpandConstant('{app}\{#AppExe}'));
   Result := '';
 end;

@@ -11,5 +11,16 @@
   "disconnected": { "message": "Connection closed" },
   "videoButton": { "message": "Download video" },
   "videoButtonTitle": { "message": "Download this video with TUNAS Download Manager" },
-  "hide": { "message": "Hide" }
+  "hide": { "message": "Hide" },
+  "titleRetryClick": { "message": "click to reconnect" },
+  "helpChecking": { "message": "Checking the connection …" },
+  "helpConnected": { "message": "Connected – the extension is working with TUNAS Download Manager." },
+  "helpNotConnected": { "message": "No connection to TUNAS Download Manager." },
+  "helpRetry": { "message": "Connect again" },
+  "helpStepsTitle": { "message": "How to get the connection back:" },
+  "helpStepInstalled": { "message": "TUNAS Download Manager must be installed. It is started automatically when needed." },
+  "helpDownload": { "message": "Download" },
+  "helpStepRepair": { "message": "In TUNAS Download Manager, open “Options” → “Browser” and click “Repair”." },
+  "helpStepRestart": { "message": "Close the browser completely (all windows) and start it again. Some browsers only notice the program's registration after that." },
+  "helpStepRetry": { "message": "Then click “Connect again” here or the TUNAS icon in the toolbar." }
 }

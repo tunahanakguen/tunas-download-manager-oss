@@ -88,6 +88,10 @@ static async Task<NamedPipeClientStream> ConnectAsync(string pipeName, string ap
     // App läuft nicht: im Infobereich starten und warten, bis die Pipe bereit ist.
     if (!File.Exists(appPath))
         throw new FileNotFoundException("TUNAS Download Manager wurde nicht gefunden.", appPath);
+    // Während das Setup Dateien ersetzt, würde eine gestartete App sie sperren und das Update abbrechen.
+    // Die Erweiterung versucht es später von selbst wieder.
+    if (SetupRunning())
+        throw new InvalidOperationException("TUNAS Download Manager wird gerade installiert oder aktualisiert.");
     Native.StartDetached(appPath, "/tray");
 
     var deadline = Stopwatch.StartNew();
@@ -97,6 +101,15 @@ static async Task<NamedPipeClientStream> ConnectAsync(string pipeName, string ap
             return started;
     }
     throw new TimeoutException("TUNAS Download Manager antwortet nicht.");
+}
+
+// Das Setup hält diesen Mutex, solange es läuft (SetupMutex in installer/TunasDM.iss).
+static bool SetupRunning()
+{
+    if (!Mutex.TryOpenExisting("TunasDMSetup", out var mutex))
+        return false;
+    mutex.Dispose();
+    return true;
 }
 
 static async Task<NamedPipeClientStream?> TryConnectAsync(string pipeName, string appPath, TimeSpan timeout)

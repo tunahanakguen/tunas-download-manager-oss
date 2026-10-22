@@ -83,6 +83,28 @@ public class BrowserTests
     }
 
     [Fact]
+    public void ManifestHostExists_ChecksTheExeNamedInTheManifest()
+    {
+        string folder = Directory.CreateTempSubdirectory().FullName;
+        try
+        {
+            string exe = Path.Combine(folder, "TunasDM.Host.exe");
+            string manifest = Path.Combine(folder, "com.tunas.dm.json");
+            File.WriteAllText(manifest, NativeHostRegistration.CreateManifest(exe));
+            Assert.False(NativeHostRegistration.ManifestHostExists(manifest));
+            File.WriteAllText(exe, "");
+            Assert.True(NativeHostRegistration.ManifestHostExists(manifest));
+            File.WriteAllText(manifest, "kein JSON");
+            Assert.False(NativeHostRegistration.ManifestHostExists(manifest));
+            Assert.False(NativeHostRegistration.ManifestHostExists(Path.Combine(folder, "fehlt.json")));
+        }
+        finally
+        {
+            Directory.Delete(folder, true);
+        }
+    }
+
+    [Fact]
     public void ExtensionTexts_EveryKeyInGermanAndEnglish()
     {
         string folder = Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "extension");
@@ -94,11 +116,12 @@ public class BrowserTests
         var de = Keys("de");
         Assert.Equal(de.Order(), Keys("en").Order());
 
-        // Jeder Schlüssel aus t("…"), getMessage("…") und __MSG_…__ ist vorhanden.
-        string code = string.Concat(new[] { "background.js", "content.js", "manifest.json", "manifest.firefox.json" }
+        // Jeder Schlüssel aus t("…"), getMessage("…"), __MSG_…__ und data-i18n="…" ist vorhanden.
+        string code = string.Concat(new[] { "background.js", "content.js", "help.js", "help.html", "manifest.json", "manifest.firefox.json" }
             .Select(f => File.ReadAllText(Path.Combine(folder, f))));
-        var used = System.Text.RegularExpressions.Regex.Matches(code, @"(?:\bt\(|getMessage\()""(\w+)""|__MSG_(\w+)__")
+        var used = System.Text.RegularExpressions.Regex.Matches(code, @"(?:\bt\(|getMessage\(|data-i18n=)""(\w+)""|__MSG_(\w+)__")
             .Select(m => m.Groups[1].Success ? m.Groups[1].Value : m.Groups[2].Value).ToHashSet();
+        Assert.Contains("helpStepRepair", used);
         Assert.NotEmpty(used);
         Assert.Empty(used.Except(de));
     }
@@ -156,9 +179,12 @@ public class BrowserTests
             // Host läuft (DLL gesperrt): nichts mischen, alte Kopie bleibt gültig.
             foreach (string name in NativeHostRegistration.HostFiles)
                 File.WriteAllText(Path.Combine(app, name), "v2 " + name);
+            // Der Verweis auf die App wird trotzdem geschrieben (das Setup löscht ihn vor jedem Update).
+            File.Delete(Path.Combine(target, NativeHostRegistration.AppPathFile));
             using (File.Open(Path.Combine(target, "TunasDM.Host.dll"), FileMode.Open, FileAccess.Read, FileShare.None))
                 Assert.Equal(installed, NativeHostRegistration.InstallHost(app, target));
             Assert.All(NativeHostRegistration.HostFiles, f => Assert.Equal("v1 " + f, File.ReadAllText(Path.Combine(target, f))));
+            Assert.Equal(Path.Combine(app, "TunasDM.exe"), File.ReadAllText(Path.Combine(target, NativeHostRegistration.AppPathFile)));
 
             // Danach wird aktualisiert.
             NativeHostRegistration.InstallHost(app, target);

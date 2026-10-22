@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TUNAS Download Manager</title>
+  <link rel="icon" href="icons/icon32.png">
+  <style>
+    :root { --bg: #f4f6fa; --card: #ffffff; --text: #16181d; --muted: #5b6270; --accent: #0a3f82; --border: #d9dee8; --ok: #1d7a3a; --bad: #c0392b; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg: #111317; --card: #1b1e24; --text: #eceef2; --muted: #a2a9b6; --accent: #5b9bea; --border: #2c313a; --ok: #4cc472; --bad: #ff6b5e; }
+    }
+    body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.55 "Segoe UI", system-ui, sans-serif; }
+    main { max-width: 640px; margin: 0 auto; padding: 32px 16px; }
+    header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+    header img { width: 40px; height: 40px; }
+    h1 { font-size: 20px; margin: 0; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; margin-bottom: 16px; }
+    #state { font-weight: 600; }
+    #state.ok { color: var(--ok); }
+    #state.bad { color: var(--bad); }
+    #error { color: var(--muted); font-size: 13px; margin-top: 4px; word-break: break-word; }
+    button { background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 8px 16px; font: inherit; cursor: pointer; margin-top: 12px; }
+    button:disabled { opacity: .6; cursor: default; }
+    ol { padding-left: 20px; margin: 8px 0 0; }
+    li { margin-bottom: 10px; }
+    a { color: var(--accent); }
+    code { background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="icons/icon48.png" alt="">
+    <h1>TUNAS Download Manager</h1>
+  </header>
+
+  <div class="card">
+    <div id="state" data-i18n="helpChecking"></div>
+    <div id="error"></div>
+    <button id="retry" data-i18n="helpRetry"></button>
+  </div>
+
+  <div class="card">
+    <strong data-i18n="helpStepsTitle"></strong>
+    <ol>
+      <li><span data-i18n="helpStepInstalled"></span> <a id="download" href="https://github.com/tunahanakguen/tunas-download-manager-releases/releases/latest" target="_blank" rel="noopener" data-i18n="helpDownload"></a></li>
+      <li data-i18n="helpStepRepair"></li>
+      <li data-i18n="helpStepRestart"></li>
+      <li data-i18n="helpStepRetry"></li>
+    </ol>
+  </div>
+</main>
+<script src="help.js"></script>
+</body>
+</html>

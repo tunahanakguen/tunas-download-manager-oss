@@ -11,5 +11,16 @@
   "disconnected": { "message": "Verbindung getrennt" },
   "videoButton": { "message": "Video laden" },
   "videoButtonTitle": { "message": "Dieses Video mit dem TUNAS Download Manager laden" },
-  "hide": { "message": "Ausblenden" }
+  "hide": { "message": "Ausblenden" },
+  "titleRetryClick": { "message": "klicken zum Neu-Verbinden" },
+  "helpChecking": { "message": "Verbindung wird geprüft …" },
+  "helpConnected": { "message": "Verbunden – die Erweiterung arbeitet mit dem TUNAS Download Manager zusammen." },
+  "helpNotConnected": { "message": "Keine Verbindung zum TUNAS Download Manager." },
+  "helpRetry": { "message": "Erneut verbinden" },
+  "helpStepsTitle": { "message": "So bekommst du die Verbindung zurück:" },
+  "helpStepInstalled": { "message": "Der TUNAS Download Manager muss installiert sein. Er wird bei Bedarf automatisch gestartet." },
+  "helpDownload": { "message": "Zum Download" },
+  "helpStepRepair": { "message": "Im TUNAS Download Manager „Optionen“ → „Browser“ öffnen und „Reparieren“ klicken." },
+  "helpStepRestart": { "message": "Den Browser ganz schließen (alle Fenster) und neu starten. Manche Browser bemerken die Anmeldung des Programms erst danach." },
+  "helpStepRetry": { "message": "Dann hier „Erneut verbinden“ klicken oder auf das TUNAS-Symbol in der Leiste." }
 }
