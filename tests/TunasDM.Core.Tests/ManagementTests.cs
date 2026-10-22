@@ -171,11 +171,11 @@ public sealed class ManagementTests : IDisposable
         await WaitFor(() =>
         {
             maxActive = Math.Max(maxActive, items.Count(i => i.IsActive));
-            return items.All(i => i.Status == DownloadStatus.Completed);
+            // Die Warteschlange endet kurz nach dem letzten „Fertig“ (PumpQueue nach dem Statuswechsel).
+            return items.All(i => i.Status == DownloadStatus.Completed) && !manager.QueueRunning;
         });
 
         Assert.Equal(1, maxActive);
-        Assert.False(manager.QueueRunning);
     }
 
     [Fact]
