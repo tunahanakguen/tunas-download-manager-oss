@@ -5,6 +5,14 @@
 Freier Download-Manager für Windows (GPL-3.0): segmentierte, wiederaufnehmbare Downloads, Warteschlangen,
 Browser-Integration, Videos, FTP/FTPS, Site-Grabber.
 
+## Herunterladen
+
+**[Neueste Fassung unter Releases](https://github.com/tunahanakguen/tunas-download-manager-oss/releases/latest)**:
+`TUNAS-Download-Manager-Setup-<Version>.exe` laden und ausführen (Windows 10/11, 64 Bit; .NET ist enthalten).
+Das Setup ist noch nicht signiert: Meldet Windows SmartScreen „Der Computer wurde durch Windows geschützt“,
+auf „Weitere Informationen“ → „Trotzdem ausführen“ klicken. Die Browser-Erweiterung wird danach als „entpackte
+Erweiterung“ geladen; die Abschlussseite des Setups zeigt den Weg.
+
 - [KONZEPT.md](KONZEPT.md): Architektur und Phasenplan
 - [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md): verwendete Bausteine und ihre Lizenzen
 - [TRADEMARKS.md](TRADEMARKS.md): Logo und Name „TUNAS“
