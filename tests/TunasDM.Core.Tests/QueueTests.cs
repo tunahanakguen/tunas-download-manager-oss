@@ -200,6 +200,8 @@ public sealed class QueueTests : IDisposable
 
         manager.StartQueue();
         await finished.Task.WaitAsync(TimeSpan.FromSeconds(30));
+        // Die verzögerte Wiederholung kann das Ende melden, bevor ItemFailed auf dem anderen Thread kommt.
+        await WaitFor(() => Volatile.Read(ref failures) > 0);
 
         Assert.Equal(DownloadStatus.Error, item.Status);
         Assert.Equal(1, failures);
