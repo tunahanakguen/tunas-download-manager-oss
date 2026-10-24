@@ -10,7 +10,7 @@ namespace TunasDM.Core.Updates;
 public sealed record UpdateInfo(Version Version, string Tag, string? Notes, Uri SetupUrl, string SetupName, long Size, string? Sha256, Uri? Page);
 
 /// <summary>
-/// Sucht unter GitHub Releases (<c>releases/latest</c>) des öffentlichen Release-Repositorys (der Code bleibt privat)
+/// Sucht unter GitHub Releases (<c>releases/latest</c>) des öffentlichen Repositorys
 /// nach einem neueren Setup
 /// (<c>TUNAS-Download-Manager-Setup-x.y.z.exe</c>) und lädt es geprüft herunter.
 /// Die Prüfsumme kommt aus GitHubs <c>digest</c> des Assets oder aus einer beiliegenden <c>.sha256</c>-Datei;
@@ -18,7 +18,7 @@ public sealed record UpdateInfo(Version Version, string Tag, string? Notes, Uri 
 /// </summary>
 public static class UpdateChecker
 {
-    public const string DefaultRepository = "tunahanakguen/tunas-download-manager-releases";
+    public const string DefaultRepository = "tunahanakguen/tunas-download-manager-oss";
     public const string SetupPrefix = "TUNAS-Download-Manager-Setup-";
 
     public static Uri LatestReleaseUri(string repository) => new($"https://api.github.com/repos/{repository}/releases/latest");

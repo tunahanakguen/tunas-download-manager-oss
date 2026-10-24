@@ -1,7 +1,8 @@
 ; TUNAS Download Manager – Installer (Inno Setup 6)
 ; Bauen: installer\build.ps1 (veröffentlicht App und Host, dann ISCC).
-; Installiert nur für den aktuellen Benutzer nach %LocalAppData%\Programs – ohne Administratorrechte,
-; passend zur Browser-Anmeldung unter HKCU.
+; Installiert für alle Benutzer nach C:\Program Files\TUNAS Download Manager (Ordner auf der Zielseite änderbar).
+; Liste, Einstellungen, Werkzeuge und die Kopie des Browser-Hosts liegen pro Benutzer unter %LocalAppData%;
+; die Browser-Anmeldung (HKCU) schreibt die App bei jedem Start selbst.
 
 #define AppName "TUNAS Download Manager"
 #define AppExe "TunasDM.exe"
@@ -12,9 +13,10 @@
   #define PublishDir "..\artifacts\publish"
 #endif
 #define DataDir "{localappdata}\TUNAS Download Manager"
+#define AppGuid "{6F0B8E52-3C1D-4D7A-9C1E-7A54D1B2C3E9}"
 
 [Setup]
-AppId={{6F0B8E52-3C1D-4D7A-9C1E-7A54D1B2C3E9}
+AppId={{#AppGuid}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppVerName={#AppName} {#AppVersion}
@@ -23,9 +25,13 @@ AppCopyright=Copyright © 2026 Tunahan A.
 VersionInfoVersion={#AppVersion}
 VersionInfoProductName={#AppName}
 DefaultDirName={autopf}\{#AppName}
+; Beim ersten Installieren ist der Zielordner wählbar, Updates bleiben im bisherigen Ordner.
+DisableDirPage=auto
 DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
-PrivilegesRequired=lowest
+PrivilegesRequired=admin
+; Autostart und Browser-Anmeldung gehören dem Benutzer, der das Setup startet (HKCU, %LocalAppData%).
+UsedUserAreasWarning=no
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0.17763
@@ -96,9 +102,10 @@ Root: HKCU; Subkey: "Software\Microsoft\Edge\NativeMessagingHosts\com.tunas.dm";
 Root: HKCU; Subkey: "Software\Mozilla\NativeMessagingHosts\com.tunas.dm"; ValueType: none; Flags: dontcreatekey uninsdeletekey
 
 [Run]
-; Erster Start im Infobereich meldet den Browser-Host bei Chrome und Edge an.
-Filename: "{app}\{#AppExe}"; Parameters: "/tray /tools"; Tasks: videotools; Flags: nowait
-Filename: "{app}\{#AppExe}"; Parameters: "/tray"; Tasks: not videotools; Flags: nowait
+; Erster Start im Infobereich meldet den Browser-Host bei Chrome und Edge an – nicht als Administrator,
+; sonst liefe die App erhöht und der Browser-Host (ohne Rechte) erreichte sie nicht.
+Filename: "{app}\{#AppExe}"; Parameters: "/tray /tools"; Tasks: videotools; Flags: nowait runasoriginaluser
+Filename: "{app}\{#AppExe}"; Parameters: "/tray"; Tasks: not videotools; Flags: nowait runasoriginaluser
 Filename: "{app}\extension.html"; Description: "{cm:ExtensionInfo}"; Flags: postinstall shellexec nowait skipifsilent
 Filename: "{app}\{#AppExe}"; Description: "{cm:LaunchProgram,{#AppName}}"; Flags: postinstall nowait skipifsilent
 
@@ -138,11 +145,29 @@ begin
     Exec(ExpandConstant('{sys}\taskkill.exe'), '/F /IM {#AppExe}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 end;
 
+{ Bis 0.7.0 lag das Programm pro Benutzer unter %LocalAppData%\Programs. Diese Fassung leise deinstallieren
+  (Liste und Einstellungen bleiben), damit nicht zwei Kopien mit eigenem Autostart übrig bleiben. }
+procedure RemovePerUserInstall();
+var
+  Uninstaller: String;
+  ResultCode: Integer;
+begin
+  if not RegQueryStringValue(HKCU, 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{#AppGuid}_is1',
+    'UninstallString', Uninstaller) then
+    Exit;
+  Uninstaller := RemoveQuotes(Uninstaller);
+  if not FileExists(Uninstaller) then
+    Exit;
+  StopApp(ExtractFilePath(Uninstaller) + '{#AppExe}');
+  Exec(Uninstaller, '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+end;
+
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 begin
   { Ohne diesen Verweis findet auch ein älterer Browser-Host die App nicht und startet sie nicht mitten im
     Update neu (gesperrte Dateien). Die App schreibt ihn beim ersten Start wieder. }
   DeleteFile(ExpandConstant('{#DataDir}\host\TunasDM.app.txt'));
+  RemovePerUserInstall();
   StopApp(ExpandConstant('{app}\{#AppExe}'));
   Result := '';
 end;

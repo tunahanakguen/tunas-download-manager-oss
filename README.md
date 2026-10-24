@@ -95,8 +95,10 @@ und z. B. das Feld „Video laden“ erscheint nicht. Ob alles läuft, zeigt das
 
 ## Stand: Phase 6 (Installer)
 
-- **Setup** `TUNAS-Download-Manager-Setup-<Version>.exe` (~58 MB) mit TUNAS-Logo, ohne Administratorrechte:
-  installiert für den aktuellen Benutzer nach `%LocalAppData%\Programs\TUNAS Download Manager`.
+- **Setup** `TUNAS-Download-Manager-Setup-<Version>.exe` (~58 MB) mit TUNAS-Logo, mit Administratorrechten:
+  installiert für alle Benutzer nach `C:\Program Files\TUNAS Download Manager` (Ordner beim ersten Installieren
+  änderbar). Eine ältere Fassung unter `%LocalAppData%\Programs` (bis 0.7.0) wird dabei leise entfernt; Liste und
+  Einstellungen bleiben.
   Bringt die .NET-Laufzeit mit, läuft also auf einem frischen Windows 10/11 (x64).
 - Startmenü, optional Desktop-Symbol und Autostart. Der erste Start im Infobereich meldet den Browser-Host bei
   Chrome und Edge an; auf Wunsch lädt TUNAS dabei **yt-dlp und ffmpeg** im Hintergrund (etwa 220 MB, mit Prüfsumme).
@@ -112,9 +114,12 @@ und z. B. das Feld „Video laden“ erscheint nicht. Ob alles läuft, zeigt das
   Hinweise der Veröffentlichung und bietet Jetzt aktualisieren, Später oder Überspringen. Das Setup wird nur mit
   passender SHA-256 (GitHub-`digest` oder `.sha256`-Datei) gestartet; abschaltbar unter Optionen → Allgemein.
   Eine Veröffentlichung braucht das Tag `vX.Y.Z` und die Datei `TUNAS-Download-Manager-Setup-X.Y.Z.exe`.
-  Die Setups liegen im öffentlichen Repository [tunas-download-manager-releases](https://github.com/tunahanakguen/tunas-download-manager-releases)
-  (der Code bleibt privat). Neue Fassung: Version in beiden csproj erhöhen, `installer\build.ps1`, dann
-  `gh release create vX.Y.Z artifacts\TUNAS-Download-Manager-Setup-X.Y.Z.exe* --repo tunahanakguen/tunas-download-manager-releases`.
+  Die Setups liegen unter den Releases des öffentlichen Repositorys
+  [tunas-download-manager-oss](https://github.com/tunahanakguen/tunas-download-manager-oss/releases/latest).
+  Neue Fassung: Version in beiden csproj erhöhen, `installer\build.ps1`, dann
+  `gh release create vX.Y.Z artifacts\TUNAS-Download-Manager-Setup-X.Y.Z.exe* --repo tunahanakguen/tunas-download-manager-oss`.
+  Fassungen bis 0.7.0 fragen noch das frühere Repository `tunas-download-manager-releases`; dort liegt deshalb
+  zusätzlich 0.8.0, die danach hier nachsieht.
 
 - **Import/Export** (Symbolleiste → „Liste“): Link-Listen aus Textdateien (Links irgendwo im Text), IDM-Listen
   (`.ef2`, mit Referer und User-Agent) und HTML-Seiten einlesen; die Auswahl zeigt alle Links (bei HTML vorausgewählt nach
@@ -220,5 +225,5 @@ von Tunahan A. – was erlaubt ist, steht in [TRADEMARKS.md](TRADEMARKS.md). Ver
 - GitHub Actions ([build.yml](.github/workflows/build.yml)): Tests und Setup bei jedem Push; bei einem Tag `v*`
   werden Programmdateien und Setup über SignPath signiert, sobald `SIGNPATH_ORGANIZATION_ID`,
   `SIGNPATH_PROJECT_SLUG` (Variablen) und `SIGNPATH_API_TOKEN` (Secret) gesetzt sind
-  ([CODE_SIGNING_POLICY.md](CODE_SIGNING_POLICY.md)). Mit `RELEASES_TOKEN` entsteht ein Release-Entwurf im
-  Release-Repository.
+  ([CODE_SIGNING_POLICY.md](CODE_SIGNING_POLICY.md)). Im öffentlichen Repository entsteht dabei ein
+  Release-Entwurf (aus dem privaten Repository nur mit dem Secret `RELEASES_TOKEN`).
